@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, withRouter, Redirect } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
 import Home from '../components/Home';
 import Login from '../components/Auth/login';
@@ -13,7 +13,10 @@ export default class Routes extends React.Component {
         <Route exact path="/" component={Home} />
         <Route exact path="/login" component={Login} />
         <Route exact path="/register" component={Register} />
-        <Route exact path="/dashboard" component={Dashboard} />
+
+        <Dashboard>
+          <Route exact path="/dashboard" component={Dashboard} />
+        </Dashboard>
       </Switch>
     );
   }
