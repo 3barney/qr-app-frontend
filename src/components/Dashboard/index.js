@@ -143,7 +143,7 @@ class Dashboard extends Component {
               <ListItemText primary="Drafts" />
             </ListItem>
           </List>
-          <Divider />
+          {/* <Divider /> */}
         </Drawer>
 
         <main className={classes.content}>
