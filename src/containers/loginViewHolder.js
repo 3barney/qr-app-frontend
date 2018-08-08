@@ -31,8 +31,19 @@ function loginViewHolder(props) {
   const {
     classes, handleLoginChange, passwordValue, showPassword,
     handleClickShowPassword, handleMouseDownPassword, emailValue,
-    onLoginButtonClick, onRegisterButtonClick,
+    onLoginButtonClick, onRegisterButtonClick, error,
   } = props;
+
+  const isValid =
+    passwordValue === '' ||
+    emailValue === '';
+
+  let serverError = null;
+  if (error) {
+    serverError = (
+      <Typography style={{ color: '#CC0000' }} variant="subheading" gutterBottom>{error}</Typography>
+    );
+  }
 
   return (
     <div>
@@ -72,7 +83,10 @@ function loginViewHolder(props) {
             }
           />
         </FormControl>
-       
+        
+        <div style={{ marginTop: 10 }} />
+        { serverError }
+
         <div style={{ marginTop: 10 }} />
         <Button
           size="large"
@@ -80,6 +94,7 @@ function loginViewHolder(props) {
           variant="contained"
           color="primary"
           onClick={onLoginButtonClick}
+          disabled={isValid}
           className={classes.button}>
             LOGIN
         </Button>
@@ -107,6 +122,7 @@ loginViewHolder.propTypes = {
   showPassword: PropTypes.bool.isRequired,
   onLoginButtonClick: PropTypes.func.isRequired,
   onRegisterButtonClick: PropTypes.func.isRequired,
+  error: PropTypes.any,
 };
 
 export default withStyles(styles)(loginViewHolder);

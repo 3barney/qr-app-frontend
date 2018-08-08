@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import purple from '@material-ui/core/colors/purple';
 
 import AppBarNavigation from '../../containers/appbar';
+import { firebase } from '../../firebase';
 
 const styles = ({
   root: {
@@ -24,8 +25,18 @@ const styles = ({
 class Home extends Component {
   constructor(props) {
     super(props);
-    this.state = { dummy: false };
+    this.state = { authUser: null };
     this.onLoginClick = this.onLoginClick.bind(this);
+  }
+  
+  // UNSAFE_componentWillMount() {
+  componentDidMount() {
+    const { onSetAuthUser } = this.props;
+    firebase.auth.onAuthStateChanged(authUser => {
+      authUser  // eslint-disable-line
+        ? onSetAuthUser(authUser)
+        : onSetAuthUser(null)
+    });
   }
 
   onLoginClick = () => {
@@ -37,6 +48,10 @@ class Home extends Component {
   }
 
   render() {
+    if (this.props.auth.authUser) {
+      this.props.history.push('/dashboard');
+    }
+
     return (
       <div style={styles.root}>
         <Grid container spacing={24}>
@@ -62,8 +77,13 @@ Home.propTypes = {
   location: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
+  onSetAuthUser: PropTypes.any,
 };
 
 const mapStateToProps = (state) => { return { ...state }; };
 
-export default connect(mapStateToProps)(Home);
+const mapDispatchToProps = (dispatch) => ({
+  onSetAuthUser: (authUser) => dispatch({ type: 'AUTH_USER_SET', authUser }),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

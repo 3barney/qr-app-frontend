@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Grid from '@material-ui/core/Grid';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import RegisterViewHolder from '../../containers/registerViewHolder';
+import { auth, db } from '../../firebase';
 
 const styles = ({
   center: {
@@ -21,13 +23,14 @@ class Register extends Component {
     super(props);
     this.state = {
       firstName: '',
-      lastName: '',
       email: '',
       idNumber: '',
       phoneNumber: '',
       password: '',
       confirmPassword: '',
       showPassword: false,
+      error: '',
+      loading: false,
     };
     this.onChange = this.onChange.bind(this);
     this.handleClickShowPassword = this.handleClickShowPassword.bind(this);
@@ -37,7 +40,7 @@ class Register extends Component {
   }
 
   onChange = propertyName => event => {
-    console.log("Props", propertyName)
+    this.setState({ error: '' });
     this.setState({ [propertyName]: event.target.value });
   }
 
@@ -50,17 +53,36 @@ class Register extends Component {
   navigateToLogin = () => { this.props.history.push('/login'); }
 
   onRegisterButtonClick = () => {
-    // TODO: // TODO: 
-    this.props.history.push('/dashboard');
+    this.setState({ loading: true });
+    const { firstName, email, idNumber, phoneNumber, password } = this.state;
+    auth.doCreateUserWithEmailAndPassword(email, password)
+      .then(authUser => {
+        return db.doCreateUser(authUser.user.uid, firstName, email, idNumber, phoneNumber);
+      })
+      .then(updatedData => {
+        this.setState({ loading: false });
+        this.props.history.push('/dashboard');
+      })
+      .catch(error => {
+        this.setState({ error: error.message, loading: false });
+      });
   }
 
   render() {
+
+    if (this.state.loading) {
+      return (
+        <div style={styles.center}>
+          <CircularProgress size={50} />
+        </div>
+      );
+    }
+
     return (
       <div style={styles.center}>
         <Grid container spacing={24} item xs={12}>
           <RegisterViewHolder
             firstName={this.state.firstName}
-            lastName={this.state.lastName}
             email={this.state.email}
             idNumber={this.state.idNumber}
             phoneNumber={this.state.phoneNumber}
@@ -72,6 +94,8 @@ class Register extends Component {
             showPassword={this.state.showPassword}
             navigateToLogin={this.navigateToLogin}
             onRegisterButtonClick={this.onRegisterButtonClick}
+            error={this.state.error}
+            loading={this.state.loading}
           />
         </Grid>
       </div>

@@ -7,6 +7,7 @@ import purple from '@material-ui/core/colors/purple';
 import green from '@material-ui/core/colors/green';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { PersistGate } from 'redux-persist/integration/react';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Routes from './route/routes';
 import registerServiceWorker from './registerServiceWorker';
@@ -29,11 +30,9 @@ const theme = createMuiTheme({
   },
 });
 
-// TODO: In loading indicator add spinner for not null
-
 const app = (
   <Provider store={store.store}>
-    <PersistGate loading={null} persistor={store.persistor}>
+    <PersistGate loading={<CircularProgress size={50} />} persistor={store.persistor}>
       <CssBaseline />
       <MuiThemeProvider theme={theme}>
         <BrowserRouter>

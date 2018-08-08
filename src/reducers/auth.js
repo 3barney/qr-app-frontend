@@ -1,76 +1,44 @@
 import * as actionTypes from '../actions/actionTypes';
+import * as actionThunks from '../thunk/authentication';
 
 const initialState = {
   token: null,
   error: null,
-  loading: false,
+  userLoading: false,
   authRedirectPath: '/',
+  authUser: null,
 };
 
-const authStart = (state, action) => {
-  return Object.assign({}, state, { error: null, loading: true });
-};
-
-const authSuccess = (state, action) => {
-  return Object.assign({}, state, {
-    token: action.token,
-    error: null,
-    loading: false,
-  });
-};
-
-const authFail = (state, action) => {
-  return Object.assign({}, state, {
-    error: action.error,
-    loading: false,
-  });
-};
-
-const authLogout = (state, action) => {
-  return (state, { token: null, userId: null });
-};
-
-const registerStart = (state, action) => {
-  return Object.assign({}, state, { error: null, loading: true });
-};
-
-const registerSuccess = (state, action) => {
-  return Object.assign({}, state, {
-    token: action.token,
-    error: null,
-    loading: false,
-  });
-};
-
-const registerFail = (state, action) => {
-  return Object.assign({}, state, {
-    error: action.error,
-    loading: false,
-  });
-};
+const applySetAuthUser = (state, action) => ({
+  ...state,
+  authUser: action.authUser,
+});
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
+    case actionTypes.AUTH_USER_SET:
+      return applySetAuthUser(state, action)
+
     case actionTypes.LOGIN_START:
-      return authStart(state, action);
+      return actionThunks.authStart(state, action);
 
     case actionTypes.LOGIN_SUCCESS:
-      return authSuccess(state, action);
+      return actionThunks.authSuccess(state, action);
 
     case actionTypes.LOGIN_FAIL:
-      return authFail(state, action);
+      return actionThunks.authFail(state, action);
 
     case actionTypes.LOGOUT:
-      return authLogout(state, action);
+      return actionThunks.authLogout(state, action);
 
     case actionTypes.REGISTER_START:
-      return registerStart(state, action);
+      return actionThunks.registerStart(state, action);
 
     case actionTypes.REGISTER_SUCCESS:
-      return registerSuccess(state, action);
+      return actionThunks.registerSuccess(state, action);
 
     case actionTypes.REGISTER_FAIL:
-      return registerFail(state, action);
+      return actionThunks.registerFail(state, action);
 
     default:
       return state;

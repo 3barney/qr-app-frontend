@@ -9,3 +9,5 @@ export const REGISTER_FAIL = 'REGISTER_FAIL';
 export const SET_REGISTER_REDIRECT_PATH = 'SET_REGISTER_REDIRECT_PATH';
 
 export const LOGOUT = 'LOGOUT';
+
+export const AUTH_USER_SET = 'AUTH_USER_SET';

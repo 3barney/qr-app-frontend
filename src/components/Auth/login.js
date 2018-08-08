@@ -2,8 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Grid from '@material-ui/core/Grid';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
-import LoginViewHolder from '../../containers/loginViewHolder'; 
+import LoginViewHolder from '../../containers/loginViewHolder';
+import * as authenticationActionsHelpers from '../../thunk/authentication';
+import { auth } from '../../firebase';
 
 const styles = ({
   center: {
@@ -23,6 +26,8 @@ class Login extends Component {
       email: '',
       password: '',
       showPassword: false,
+      error: '',
+      loading: false,
     };
     this.onChange = this.onChange.bind(this);
     this.handleMouseDownPassword = this.handleMouseDownPassword.bind(this);
@@ -32,7 +37,7 @@ class Login extends Component {
   }
 
   onChange = propertyName => event => {
-    this.setState({ [propertyName]: event.target.value });
+    this.setState({ [propertyName]: event.target.value, error: '' });
   };
 
   handleMouseDownPassword = event => { event.preventDefault(); }
@@ -41,19 +46,50 @@ class Login extends Component {
     this.setState({ showPassword: !this.state.showPassword });
   }
 
-  onLoginButtonClick = () => {
-    // TODO: Pick state value, check for null, set errors
-    // aand send to action
-    this.props.history.push('/dashboard');
+  onLoginButtonClick = (event) => {
+    event.preventDefault();
+    this.setState({ loading: true });
+    const { email, password } = this.state;
+    auth.doSignInWithEmailAndPassword(email, password)
+      .then(user => {
+        this.setState({ loading: false });
+        const { uid } = user.user;
+        console.log(uid);
+        this.props.history.push('/dashboard');
+      })
+      .catch(error => {
+        this.setState({ loading: false });
+        this.setState({ error: error.message });
+      });
+    // const { dispatch } = this.props;
+    // const { email, password } = this.state;
+    // if (email.length === 0 || email.length < 5) {
+    //   return this.setState({ error: 'Invalid Email Address' });
+    // }
+
+    // if (password.length === 0) {
+    //   return this.setState({ error: 'Password is required' });
+    // }
+    // dispatch(authenticationActionsHelpers.loginUser(email, password));
+    // // this.props.history.push('/dashboard');
   }
 
   onRegisterButtonClick = () => { this.props.history.push('/register'); }
 
   render() {
+    if (this.state.loading) {
+      return (
+        <div style={styles.center}>
+          <CircularProgress size={50} />
+        </div>
+      );
+    }
+
     return (
       <div style={styles.center}>
         <Grid container spacing={24} item xs={12}>
           <LoginViewHolder
+            errorMessage={this.state.error}
             emailValue={this.state.emailValue}
             passwordValue={this.state.password}
             handleLoginChange={this.onChange}
@@ -62,6 +98,7 @@ class Login extends Component {
             handleMouseDownPassword={this.handleMouseDownPassword}
             onLoginButtonClick={this.onLoginButtonClick}
             onRegisterButtonClick={this.onRegisterButtonClick}
+            error={this.state.error}
           />
         </Grid>
       </div>

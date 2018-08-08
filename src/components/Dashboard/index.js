@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import compose from 'recompose/compose';
-import { Route, Link } from 'react-router-dom';
+import { Route, Link, Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import * as firebase from 'firebase';
 
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -11,7 +12,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
+import AccountCircle from '@material-ui/icons/AccountCircle';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -25,6 +26,8 @@ import StarBorder from '@material-ui/icons/StarBorder';
 
 import DeviceListing from '../Devices';
 import AddDevice from '../Devices/addDevice';
+import OwnDevice from '../Devices/ownDevice';
+import { auth } from '../../firebase';
 
 const drawerWidth = 240;
 
@@ -71,14 +74,34 @@ class Dashboard extends Component {
     super(props);
     this.state = {
       openDevice: true,
+      redirect: false,
+      devices: {},
     };
     this.handleDeviceMenu = this.handleDeviceMenu.bind(this);
+    this.logoutUser = this.logoutUser.bind(this);
+  }
+
+  componentDidMount() {
+    const userDevices = firebase.database().ref('devices/');
+    userDevices.orderByKey().on('child_added', (data) => {
+      this.setState({ devices: data.val() });
+    });
   }
 
   handleDeviceMenu = () => { this.setState({ openDevice: !this.state.openDevice }); }
 
+  logoutUser = () => {
+    auth.doSignOut();
+    this.setState({ redirect: true });
+  }
+
   render() {
-    const { classes } = this.props;
+    const { classes, auth } = this.props;
+    const { redirect } = this.state;
+
+    if (redirect) {
+      return <Redirect to="/" />;
+    }
 
     return (
       <div className={classes.root}>
@@ -87,15 +110,18 @@ class Dashboard extends Component {
             <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
               <MenuIcon />
             </IconButton>
-            <Typography variant="title" color="inherit" className={classes.flex}>Welcome Guest</Typography>
+            {auth.authUser
+              ? <Typography variant="title" color="inherit" className={classes.flex}>Welcome {auth.authUser.email}</Typography>
+              : <Typography variant="title" color="inherit" className={classes.flex}>Welcome Guest</Typography>              
+            }
             <div>
               {/* <IconButton
-                    aria-owns='menu-appbar'
-                    color="inherit"
-                    position ="static"
-                  >
-                    <AccountCircle />
-                  </IconButton> */}
+                aria-owns='menu-appbar'
+                color="inherit"
+                position ="static"
+              >
+                <AccountCircle />
+              </IconButton> */}
             </div>
           </Toolbar>
         </AppBar>
@@ -142,6 +168,13 @@ class Dashboard extends Component {
               </ListItemIcon>
               <ListItemText primary="Drafts" />
             </ListItem>
+
+            <ListItem button onClick={this.logoutUser}>
+              <ListItemIcon>
+                <AccountCircle />
+              </ListItemIcon>
+              <ListItemText inset>Logout</ListItemText>
+            </ListItem>
           </List>
           {/* <Divider /> */}
         </Drawer>
@@ -151,12 +184,21 @@ class Dashboard extends Component {
           <Route
             exact
             path='/dashboard'
-            component={DeviceListing}
+            render={(props) => (
+              <DeviceListing {...props} devices={this.state.devices}/>
+            )}            
           />
           <Route
             exact
             path='/dashboard/device'
             component={AddDevice}
+          />
+          <Route
+            exact
+            path='/dashboard/device/single/:id'
+            render={(props) => (
+              <OwnDevice {...props} devices={this.state.devices} />
+            )}
           />
         </main>
       </div>
@@ -166,6 +208,7 @@ class Dashboard extends Component {
 
 Dashboard.propTypes = {
   classes: PropTypes.object.isRequired,
+  auth: PropTypes.object.isRequired,
 };
 
 

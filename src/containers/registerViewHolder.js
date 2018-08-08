@@ -56,10 +56,23 @@ function createInputElements(classs, value, labelName, type, onChangeHandler) {
 
 function registerViewHolder(props) {
   const {
-    classes, handleRegisterChange, firstName, lastName, email, idNumber,
+    classes, handleRegisterChange, firstName, email, idNumber,
     phoneNumber, password, confirmPassword, handleClickShowPassword, handleMouseDownPassword,
-    showPassword, navigateToLogin, onRegisterButtonClick,
+    showPassword, navigateToLogin, onRegisterButtonClick, error,
   } = props;
+
+  let showError = null;
+  if (error) {
+    showError = (
+      <Typography style={{ color: '#CC0000' }} variant="subheading" gutterBottom>{error}</Typography>
+    );
+  }
+
+  const isValid =
+    password !== confirmPassword ||
+    password === '' ||
+    email === '' ||
+    idNumber === '';
 
   return (
     <div>
@@ -69,9 +82,6 @@ function registerViewHolder(props) {
         </Typography>
 
         { createInputElements(classes, firstName, 'First Name', 'text', handleRegisterChange) }
-        <div style={{ marginTop: 10 }} />
-
-        { createInputElements(classes, lastName, 'Last Name', 'text', handleRegisterChange) }
         <div style={{ marginTop: 10 }} />
 
         { createInputElements(classes, email, 'Email', 'email', handleRegisterChange) }
@@ -125,13 +135,16 @@ function registerViewHolder(props) {
           />
         </FormControl>
         <div style={{ marginTop: 10 }} />
-
-
+        
+        { showError }
+        
+        <div style={{ marginTop: 10 }} />
         <Button
           size="large"
           fullWidth
           variant="contained"
           color="primary"
+          disabled={isValid}
           onClick={onRegisterButtonClick}
           className={classes.button}>
             REGISTER
@@ -153,7 +166,6 @@ registerViewHolder.propTypes = {
   classes: PropTypes.object.isRequired,
   handleRegisterChange: PropTypes.func.isRequired,
   firstName: PropTypes.string.isRequired,
-  lastName: PropTypes.string.isRequired,
   email: PropTypes.string.isRequired,
   idNumber: PropTypes.string.isRequired,
   phoneNumber: PropTypes.string.isRequired,
@@ -164,6 +176,7 @@ registerViewHolder.propTypes = {
   handleMouseDownPassword: PropTypes.func.isRequired,
   navigateToLogin: PropTypes.func.isRequired,
   onRegisterButtonClick: PropTypes.func.isRequired,
+  error: PropTypes.any,
 };
 
 export default withStyles(styles)(registerViewHolder);
