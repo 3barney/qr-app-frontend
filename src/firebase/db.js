@@ -12,7 +12,7 @@ export const doCreateUser = (id, name, email, idNumber, phoneNumber) => {
 };
 
 export const onGetUsers = () => {
-  db.ref('users').once('value');
+  return db.ref('users').once('value');
 };
 
 // Device Entity

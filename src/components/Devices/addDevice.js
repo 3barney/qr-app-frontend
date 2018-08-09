@@ -48,10 +48,28 @@ class AddDevice extends Component {
       error: '',
       loading: false,
       open: false,
+      user: [],
+      email: '',
+      idNumber: '',
+      name: '',
     }
     this.handleItemChange = this.handleItemChange.bind(this);
     this.onSaveButtonClicked = this.onSaveButtonClicked.bind(this);
     this.handleClose = this.handleClose.bind(this);
+  }
+
+  componentDidMount() {
+    db.onGetUsers()
+      .then((data) => {
+        const item = data.val();
+        Object.keys(item).forEach((singleKey) => {
+          const { email, idNumber, name } = item[singleKey];
+          this.setState({ email, idNumber, name });
+        })
+      }) 
+      .catch((error) => {
+        console.log(error)
+      })
   }
 
   handleItemChange = propertyName => event => {
@@ -60,10 +78,10 @@ class AddDevice extends Component {
 
   onSaveButtonClicked = () => {
     this.setState({ loading: true });
-    const { deviceName, serialNumber, manufacturer } = this.state;
+    const { deviceName, serialNumber, manufacturer, email, idNumber, name } = this.state;
     const { auth } = this.props;
     const userID = auth.authUser.uid;
-    const deviceString = `${serialNumber}#${userID}`;
+    const deviceString = `${serialNumber}#${name}#${idNumber}#${email}#${userID}`;
     let info;
     QRCode.toDataURL(deviceString)
       .then((data) => {
